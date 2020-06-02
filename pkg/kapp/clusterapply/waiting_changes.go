@@ -107,7 +107,7 @@ func (c *WaitingChanges) WaitForAny() ([]WaitingChange, error) {
 			return doneChanges, nil
 		}
 
-		if time.Now().Sub(startTime) > c.opts.Timeout {
+		if time.Since(startTime) > c.opts.Timeout {
 			return nil, fmt.Errorf("Timed out waiting after %s", c.opts.Timeout)
 		}
 

@@ -65,14 +65,17 @@ func (c ConvergedResource) IsDoneApplying() (ctlresm.DoneApplyState, []string, e
 
 	convergedResState, err := c.isResourceDoneApplying(c.res, associatedRs)
 	if err != nil {
-		return ctlresm.DoneApplyState{Done: true}, descMsgs, err
+		panic("Error on isResourceDoneApplying")
 	}
 
 	// Custom wait rules
 	waitRules := c.res.WaitingRule()
 	if waitRules.SupportsObservedGeneration || len(waitRules.FailureConditions) > 0 || len(waitRules.SuccessfulConditions) > 0 {
 		obj := genericResource{}
-		c.res.AsUncheckedTypedObj(&obj)
+		err := c.res.AsUncheckedTypedObj(&obj)
+		if err != nil {
+			return ctlresm.DoneApplyState{Done: true}, descMsgs, err
+		}
 		if obj.Generation != obj.Status.ObservedGeneration {
 			return ctlresm.DoneApplyState{Done: false}, descMsgs, err
 		}
