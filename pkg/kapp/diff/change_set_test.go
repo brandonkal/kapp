@@ -172,7 +172,7 @@ metadata:
 	}
 
 	ignoreFieldsMods := []ctlres.FieldRemoveMod{
-		ctlres.FieldRemoveMod{
+		{
 			ResourceMatcher: ctlres.AllMatcher{},
 			Path:            ctlres.NewPathFromStrings([]string{"metadata", "annotations", "unexpected-ignored"}),
 		},
@@ -248,7 +248,7 @@ metadata:
 	}
 
 	ignoreFieldsMods := []ctlres.FieldRemoveMod{
-		ctlres.FieldRemoveMod{
+		{
 			ResourceMatcher: ctlres.AllMatcher{},
 			Path:            ctlres.NewPathFromStrings([]string{"metadata", "annotations", "rebased-ignored"}),
 		},

@@ -21,6 +21,7 @@ type Config struct {
 	MinimumRequiredVersion string `json:"minimumRequiredVersion,omitempty"`
 
 	RebaseRules         []RebaseRule
+	WaitingRules        []ctlres.WaitingRuleMod
 	OwnershipLabelRules []OwnershipLabelRule
 	LabelScopingRules   []LabelScopingRule
 	TemplateRules       []TemplateRule
@@ -41,6 +42,13 @@ type RebaseRule struct {
 	Paths            []ctlres.Path
 	Type             string
 	Sources          []ctlres.FieldCopyModSource
+}
+
+type WaitingRule struct {
+	SupportsObservedGeneration bool
+	SuccessfulConditions       []string
+	FailureConditions          []string
+	ResourceMatchers           []ResourceMatcher
 }
 
 type DiffAgainstLastAppliedFieldExclusionRule struct {

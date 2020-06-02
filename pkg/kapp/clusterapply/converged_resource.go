@@ -158,6 +158,8 @@ func (c ConvergedResource) isResourceDoneApplying(res ctlres.Resource,
 			return &state, nil
 		}
 	}
+	// Check against custom completion rules, then return state @brandonkal
+
 	return nil, nil
 }
 

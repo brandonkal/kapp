@@ -66,6 +66,14 @@ func (c Conf) OwnershipLabelMods() func(kvs map[string]string) []ctlres.StringMa
 	}
 }
 
+func (c Conf) WaitRuleMods() []ctlres.WaitingRuleMod {
+	var mods []ctlres.WaitingRuleMod
+	for _, config := range c.configs {
+		mods = append(mods, config.WaitingRules...)
+	}
+	return mods
+}
+
 func (c Conf) LabelScopingMods() func(kvs map[string]string) []ctlres.StringMapAppendMod {
 	return func(kvs map[string]string) []ctlres.StringMapAppendMod {
 		var mods []ctlres.StringMapAppendMod

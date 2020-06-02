@@ -59,6 +59,9 @@ func (f ConvergedResourceFactory) New(res ctlres.Resource,
 		func(res ctlres.Resource, _ []ctlres.Resource) (SpecificResource, bool) {
 			return ctlresm.NewBatchVxCronJob(res), false
 		},
+		func(res ctlres.Resource, _ []ctlres.Resource) (SpecificResource, bool) {
+			return ctlresm.NewCustomResource(res), false
+		},
 	}
 
 	return NewConvergedResource(res, associatedRsFunc, specificResFactories)
