@@ -8,6 +8,8 @@ import (
 	"github.com/fatih/color"
 	ctlres "github.com/k14s/kapp/pkg/kapp/resources"
 	ctlresm "github.com/k14s/kapp/pkg/kapp/resourcesmisc"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
@@ -28,6 +30,31 @@ func NewConvergedResource(res ctlres.Resource,
 	return ConvergedResource{res, associatedRsFunc, specificResFactories}
 }
 
+type genericResource struct {
+	Generation int64
+	Status     struct {
+		ObservedGeneration int64
+		Conditions         []genericCondition
+	}
+}
+
+// genericCondition describes a generic condition field
+type genericCondition struct {
+	// Type of DaemonSet condition.
+	Type string `json:"type"`
+	// Status of the condition, one of True, False, Unknown.
+	Status v1.ConditionStatus `json:"status"`
+	// Last time the condition transitioned from one status to another.
+	// +optional
+	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty"`
+	// The reason for the condition's last transition.
+	// +optional
+	Reason string `json:"reason,omitempty"`
+	// A human readable message indicating details about the transition.
+	// +optional
+	Message string `json:"message,omitempty"`
+}
+
 func (c ConvergedResource) IsDoneApplying() (ctlresm.DoneApplyState, []string, error) {
 	var descMsgs []string
 
@@ -39,6 +66,32 @@ func (c ConvergedResource) IsDoneApplying() (ctlresm.DoneApplyState, []string, e
 	convergedResState, err := c.isResourceDoneApplying(c.res, associatedRs)
 	if err != nil {
 		return ctlresm.DoneApplyState{Done: true}, descMsgs, err
+	}
+
+	// Custom wait rules
+	waitRules := c.res.WaitingRule()
+	if waitRules.SupportsObservedGeneration || len(waitRules.FailureConditions) > 0 || len(waitRules.SuccessfulConditions) > 0 {
+		obj := genericResource{}
+		c.res.AsUncheckedTypedObj(&obj)
+		if obj.Generation != obj.Status.ObservedGeneration {
+			return ctlresm.DoneApplyState{Done: false}, descMsgs, err
+		}
+		for _, fc := range waitRules.FailureConditions {
+			for _, cond := range obj.Status.Conditions {
+				if cond.Type == fc && cond.Status == v1.ConditionTrue {
+					descMsgs = append(descMsgs, cond.Message)
+					return ctlresm.DoneApplyState{Done: false, Successful: false}, descMsgs, err
+				}
+			}
+		}
+		for _, sc := range waitRules.SuccessfulConditions {
+			for _, cond := range obj.Status.Conditions {
+				if cond.Type == sc && cond.Status == v1.ConditionTrue {
+					descMsgs = append(descMsgs, cond.Message)
+					return ctlresm.DoneApplyState{Done: true}, descMsgs, err
+				}
+			}
+		}
 	}
 
 	if convergedResState != nil {

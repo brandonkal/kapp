@@ -12,7 +12,7 @@ type CustomResource struct {
 }
 
 func NewCustomResource(resource ctlres.Resource) *CustomResource {
-	for _, rule := range ctlres.WaitingRules {
+	for _, rule := range resource. {
 		mods = append(mods, rule...)
 	}
 	matcher := ctlres.APIVersionKindMatcher{
@@ -27,13 +27,12 @@ func NewCustomResource(resource ctlres.Resource) *CustomResource {
 
 func (s CustomResource) IsDoneApplying() DoneApplyState {
 	dset := appsv1.DaemonSet{}
-
-	err := s.resource.AsTypedObj(&dset)
+	err := s.resource.AsUncheckedTypedObj(&dset)
 	if err != nil {
 		return DoneApplyState{Done: true, Successful: false, Message: fmt.Sprintf("Error: Failed obj conversion: %s", err)}
 	}
-
-	if dset.Generation != dset.Status.ObservedGeneration {
+	status := s.resource.Status()
+	if dset.Generation != status["ObservedGeneration"] {
 		return DoneApplyState{Done: false, Message: fmt.Sprintf(
 			"Waiting for generation %d to be observed", dset.Generation)}
 	}

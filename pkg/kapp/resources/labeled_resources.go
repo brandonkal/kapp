@@ -28,8 +28,9 @@ func NewLabeledResources(labelSelector labels.Selector,
 	return &LabeledResources{labelSelector, identifiedResources, logger.NewPrefixed("LabeledResources")}
 }
 
+// Modifies passed resources for labels and ownership
 func (a *LabeledResources) Prepare(resources []Resource, olmFunc OwnershipLabelModsFunc,
-	lsmFunc LabelScopingModsFunc, additionalLabels map[string]string) error {
+	lsmFunc LabelScopingModsFunc, additionalLabels map[string]string, waitRuleMods []WaitingRuleMod) error {
 
 	defer a.logger.DebugFunc("Prepare").Finish()
 
@@ -39,6 +40,7 @@ func (a *LabeledResources) Prepare(resources []Resource, olmFunc OwnershipLabelM
 	}
 
 	for _, res := range resources {
+		res.SetWaitingRule(waitRuleMods)
 		assocLabel := NewAssociationLabel(res)
 		ownershipLabels := map[string]string{
 			labelKey:         labelVal,

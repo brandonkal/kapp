@@ -27,6 +27,7 @@ func (t StringMapAppendMod) Apply(res Resource) error {
 }
 
 func (t StringMapAppendMod) apply(obj interface{}, path Path) error {
+
 	for i, part := range path {
 		switch {
 		case part.MapKey != nil:
