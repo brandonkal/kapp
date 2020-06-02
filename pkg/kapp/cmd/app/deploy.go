@@ -214,15 +214,19 @@ func (o *DeployOptions) newResources(
 	prep ctlapp.Preparation, labeledResources *ctlres.LabeledResources,
 	resourceFilter ctlres.ResourceFilter) ([]ctlres.Resource, ctlconf.Conf, []string, error) {
 
+	o.logger.Debug("start newResources")
+
 	newResources, err := o.newResourcesFromFiles()
 	if err != nil {
 		return nil, ctlconf.Conf{}, nil, err
 	}
+	o.logger.Debug("1")
 
 	newResources, conf, err := ctlconf.NewConfFromResourcesWithDefaults(newResources)
 	if err != nil {
 		return nil, ctlconf.Conf{}, nil, err
 	}
+	o.logger.Debug("2")
 
 	newResources, err = prep.PrepareResources(newResources)
 	if err != nil {

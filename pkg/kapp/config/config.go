@@ -21,7 +21,7 @@ type Config struct {
 	MinimumRequiredVersion string `json:"minimumRequiredVersion,omitempty"`
 
 	RebaseRules         []RebaseRule
-	WaitingRules        []ctlres.WaitingRuleMod
+	WaitingRules        []ctlres.WaitingRuleMod `json:"waitingRules"`
 	OwnershipLabelRules []OwnershipLabelRule
 	LabelScopingRules   []LabelScopingRule
 	TemplateRules       []TemplateRule
@@ -158,6 +158,8 @@ func NewConfigFromResource(res ctlres.Resource) (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
+	// TEMP: debug
+	fmt.Printf("new config from res: %s\n", res.Description())
 
 	var config Config
 

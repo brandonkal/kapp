@@ -3,6 +3,7 @@ package resources
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"reflect"
 	"strings"
 	"time"
@@ -76,6 +77,7 @@ var _ Resource = &ResourceImpl{}
 
 // Find waiting rule for specified resource
 func (r *ResourceImpl) WaitingRule() WaitingRuleMod {
+	log.Println("calling WaitingRule")
 	if r.hasWaitingRule {
 		return r.waitingRule
 	}
@@ -115,7 +117,7 @@ func NewResourceFromBytes(data []byte) (*ResourceImpl, error) {
 		return nil, nil
 	}
 
-	return &ResourceImpl{un: unstructured.Unstructured{content}}, nil
+	return &ResourceImpl{un: unstructured.Unstructured{Object: content}}, nil
 }
 
 func MustNewResourceFromBytes(data []byte) *ResourceImpl {
@@ -142,7 +144,7 @@ func NewResourcesFromBytes(data []byte) ([]Resource, error) {
 		return nil, nil
 	}
 
-	un := unstructured.Unstructured{content}
+	un := unstructured.Unstructured{Object: content}
 
 	if un.IsList() {
 		list, err := un.ToList()

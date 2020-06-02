@@ -92,7 +92,7 @@ func (g *ResourceTypesImpl) serverResources() ([]*metav1.APIResourceList, error)
 			// we can do with the way kubernetes exposes this functionality.
 			if g.opts.CanIgnoreFailingAPIService != nil {
 				groupsCanBeIgnored := true
-				for groupVer, _ := range typedLastErr.Groups {
+				for groupVer := range typedLastErr.Groups {
 					if !g.opts.CanIgnoreFailingAPIService(groupVer) {
 						groupsCanBeIgnored = false
 						break
