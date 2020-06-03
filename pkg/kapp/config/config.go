@@ -21,7 +21,7 @@ type Config struct {
 	MinimumRequiredVersion string `json:"minimumRequiredVersion,omitempty"`
 
 	RebaseRules         []RebaseRule
-	WaitingRules        []ctlres.WaitingRuleMod `json:"waitingRules"`
+	WaitingRules        []WaitingRule
 	OwnershipLabelRules []OwnershipLabelRule
 	LabelScopingRules   []LabelScopingRule
 	TemplateRules       []TemplateRule
@@ -36,19 +36,19 @@ type Config struct {
 	ChangeRuleBindings  []ChangeRuleBinding
 }
 
+type WaitingRule struct {
+	SupportsObservedGeneration bool             `json:"supportsObservedGeneration"`
+	SuccessfulConditions       []string         `json:"successfulConditions"`
+	FailureConditions          []string         `json:"failureConditions"`
+	ResourceMatchers           ResourceMatchers `json:"resourceMatchers"`
+}
+
 type RebaseRule struct {
 	ResourceMatchers []ResourceMatcher
 	Path             ctlres.Path
 	Paths            []ctlres.Path
 	Type             string
 	Sources          []ctlres.FieldCopyModSource
-}
-
-type WaitingRule struct {
-	SupportsObservedGeneration bool
-	SuccessfulConditions       []string
-	FailureConditions          []string
-	ResourceMatchers           []ResourceMatcher
 }
 
 type DiffAgainstLastAppliedFieldExclusionRule struct {

@@ -2,6 +2,7 @@ package clusterapply
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 	"sort"
 
@@ -70,7 +71,10 @@ func (c ConvergedResource) IsDoneApplying() (ctlresm.DoneApplyState, []string, e
 
 	// Custom wait rules
 	waitRules := c.res.WaitingRule()
+	log.Println("DEBUG: waitingRules")
+	log.Println(waitRules)
 	if waitRules.SupportsObservedGeneration || len(waitRules.FailureConditions) > 0 || len(waitRules.SuccessfulConditions) > 0 {
+		log.Println("DEBUG: waitingRules active")
 		obj := genericResource{}
 		err := c.res.AsUncheckedTypedObj(&obj)
 		if err != nil {

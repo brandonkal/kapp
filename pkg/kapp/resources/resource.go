@@ -77,20 +77,24 @@ var _ Resource = &ResourceImpl{}
 
 // Find waiting rule for specified resource
 func (r *ResourceImpl) WaitingRule() WaitingRuleMod {
-	log.Println("calling WaitingRule")
 	if r.hasWaitingRule {
 		return r.waitingRule
 	}
-	return WaitingRuleMod{}
+	log.Println("No waitingRule exists")
+	return r.waitingRule
 }
 
 // Find waiting rule for specified resource
 func (r *ResourceImpl) SetWaitingRule(rules []WaitingRuleMod) {
 	mod := WaitingRuleMod{}
 	hasMod := false
+	log.Printf("Setting Waiting Rule: length: %v\n", len(rules))
+	log.Printf("%v", rules)
+	log.Printf("res: %v", r.Description())
 	for _, rule := range rules {
 		for _, matcher := range rule.ResourceMatchers {
 			if matcher.Matches(r.DeepCopy()) {
+				log.Printf("Match found")
 				hasMod = true
 				mod.SupportsObservedGeneration = rule.SupportsObservedGeneration
 				mod.SuccessfulConditions = append(mod.SuccessfulConditions, rule.SuccessfulConditions...)
@@ -98,6 +102,7 @@ func (r *ResourceImpl) SetWaitingRule(rules []WaitingRuleMod) {
 			}
 		}
 	}
+	r.waitingRule = mod
 	r.hasWaitingRule = hasMod
 }
 

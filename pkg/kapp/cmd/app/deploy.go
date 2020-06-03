@@ -129,6 +129,10 @@ func (o *DeployOptions) Run() error {
 		return err
 	}
 
+	for _, re := range newResources {
+		o.logger.Debug("res after f: %v", re.WaitingRule().FailureConditions)
+	}
+
 	existingResources, err := o.existingResources(newResources, labeledResources, resourceFilter, supportObjs.Apps)
 	if err != nil {
 		return err
