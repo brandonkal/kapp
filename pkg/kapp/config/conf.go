@@ -33,7 +33,6 @@ func NewConfFromResources(resources []ctlres.Resource) ([]ctlres.Resource, Conf,
 
 	cfg := Conf{configs}
 
-	// TODO: complete
 	ctlres.SetGlobalWaitingRules(cfg.WaitRuleMods())
 
 	return rsWithoutConfigs, cfg, nil

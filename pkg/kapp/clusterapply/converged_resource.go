@@ -2,7 +2,6 @@ package clusterapply
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 	"sort"
 
@@ -33,7 +32,7 @@ func NewConvergedResource(res ctlres.Resource,
 }
 
 type genericResource struct {
-	metadata   metav1.ObjectMeta
+	Metadata   metav1.ObjectMeta
 	Generation int64
 	Status     struct {
 		ObservedGeneration int64
@@ -73,18 +72,13 @@ func (c ConvergedResource) IsDoneApplying() (ctlresm.DoneApplyState, []string, e
 
 	// Custom wait rule
 	wr := c.waitingRule
-	log.Println("DEBUG: waitingRules success")
-	log.Println(wr.SuccessfulConditions)
 	if wr.SupportsObservedGeneration || len(wr.FailureConditions) > 0 || len(wr.SuccessfulConditions) > 0 {
-		log.Println("DEBUG: waitingRules active")
 		obj := genericResource{}
 		err := c.res.AsUncheckedTypedObj(&obj)
 		if err != nil {
-			log.Println("DEBUG: marshal error")
-			return ctlresm.DoneApplyState{Done: true}, descMsgs, err
+			return ctlresm.DoneApplyState{Done: true, Successful: false}, descMsgs, err
 		}
-		if obj.metadata.Generation != obj.Status.ObservedGeneration {
-			log.Printf("DEBUG: gen error: %v != %v", obj.metadata.Generation, obj.Status.ObservedGeneration)
+		if wr.SupportsObservedGeneration && obj.Metadata.Generation != obj.Status.ObservedGeneration {
 			return ctlresm.DoneApplyState{Done: false}, descMsgs, err
 		}
 		for _, fc := range wr.FailureConditions {
@@ -99,7 +93,7 @@ func (c ConvergedResource) IsDoneApplying() (ctlresm.DoneApplyState, []string, e
 			for _, cond := range obj.Status.Conditions {
 				if cond.Type == sc && cond.Status == v1.ConditionTrue {
 					descMsgs = append(descMsgs, cond.Message)
-					return ctlresm.DoneApplyState{Done: true}, descMsgs, err
+					return ctlresm.DoneApplyState{Done: true, Successful: true}, descMsgs, err
 				}
 			}
 		}

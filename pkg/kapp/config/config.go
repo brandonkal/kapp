@@ -158,9 +158,6 @@ func NewConfigFromResource(res ctlres.Resource) (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
-	// TEMP: debug
-	fmt.Printf("new config from res: %s\n", res.Description())
-
 	var config Config
 
 	err = yaml.Unmarshal(bs, &config)
