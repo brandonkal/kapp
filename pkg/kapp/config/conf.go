@@ -73,11 +73,11 @@ func (c Conf) OwnershipLabelMods() func(kvs map[string]string) []ctlres.StringMa
 
 func (c Conf) WaitRuleMods() []ctlres.WaitingRuleMod {
 	var mods []ctlres.WaitingRuleMod // not config.WaitingRule
-	// TODO: fix
 	for _, cfg := range c.configs {
 		for _, rule := range cfg.WaitingRules {
 			mods = append(mods, ctlres.WaitingRuleMod{
 				SupportsObservedGeneration: rule.SupportsObservedGeneration,
+				SuccessfulConditions:       rule.SuccessfulConditions,
 				FailureConditions:          rule.FailureConditions,
 				ResourceMatchers:           rule.ResourceMatchers.AsResourceMatchers(),
 			})

@@ -33,6 +33,7 @@ func NewConvergedResource(res ctlres.Resource,
 }
 
 type genericResource struct {
+	metadata   metav1.ObjectMeta
 	Generation int64
 	Status     struct {
 		ObservedGeneration int64
@@ -70,18 +71,20 @@ func (c ConvergedResource) IsDoneApplying() (ctlresm.DoneApplyState, []string, e
 		panic("Error on isResourceDoneApplying")
 	}
 
-	// Custom wait rules
+	// Custom wait rule
 	wr := c.waitingRule
-	log.Println("DEBUG: waitingRules")
-	log.Println(wr)
+	log.Println("DEBUG: waitingRules success")
+	log.Println(wr.SuccessfulConditions)
 	if wr.SupportsObservedGeneration || len(wr.FailureConditions) > 0 || len(wr.SuccessfulConditions) > 0 {
 		log.Println("DEBUG: waitingRules active")
 		obj := genericResource{}
 		err := c.res.AsUncheckedTypedObj(&obj)
 		if err != nil {
+			log.Println("DEBUG: marshal error")
 			return ctlresm.DoneApplyState{Done: true}, descMsgs, err
 		}
-		if obj.Generation != obj.Status.ObservedGeneration {
+		if obj.metadata.Generation != obj.Status.ObservedGeneration {
+			log.Printf("DEBUG: gen error: %v != %v", obj.metadata.Generation, obj.Status.ObservedGeneration)
 			return ctlresm.DoneApplyState{Done: false}, descMsgs, err
 		}
 		for _, fc := range wr.FailureConditions {
