@@ -21,14 +21,15 @@ type ConvergedResource struct {
 	res                  ctlres.Resource
 	associatedRsFunc     func(ctlres.Resource) ([]ctlres.Resource, error)
 	specificResFactories []SpecificResFactory
+	waitingRule          ctlres.WaitingRuleMod
 }
 
 type SpecificResFactory func(ctlres.Resource, []ctlres.Resource) (SpecificResource, bool)
 
 func NewConvergedResource(res ctlres.Resource,
 	associatedRsFunc func(ctlres.Resource) ([]ctlres.Resource, error),
-	specificResFactories []SpecificResFactory) ConvergedResource {
-	return ConvergedResource{res, associatedRsFunc, specificResFactories}
+	specificResFactories []SpecificResFactory, waitingRule ctlres.WaitingRuleMod) ConvergedResource {
+	return ConvergedResource{res, associatedRsFunc, specificResFactories, waitingRule}
 }
 
 type genericResource struct {
@@ -70,10 +71,10 @@ func (c ConvergedResource) IsDoneApplying() (ctlresm.DoneApplyState, []string, e
 	}
 
 	// Custom wait rules
-	waitRules := c.res.WaitingRule()
+	wr := c.waitingRule
 	log.Println("DEBUG: waitingRules")
-	log.Println(waitRules)
-	if waitRules.SupportsObservedGeneration || len(waitRules.FailureConditions) > 0 || len(waitRules.SuccessfulConditions) > 0 {
+	log.Println(wr)
+	if wr.SupportsObservedGeneration || len(wr.FailureConditions) > 0 || len(wr.SuccessfulConditions) > 0 {
 		log.Println("DEBUG: waitingRules active")
 		obj := genericResource{}
 		err := c.res.AsUncheckedTypedObj(&obj)
@@ -83,7 +84,7 @@ func (c ConvergedResource) IsDoneApplying() (ctlresm.DoneApplyState, []string, e
 		if obj.Generation != obj.Status.ObservedGeneration {
 			return ctlresm.DoneApplyState{Done: false}, descMsgs, err
 		}
-		for _, fc := range waitRules.FailureConditions {
+		for _, fc := range wr.FailureConditions {
 			for _, cond := range obj.Status.Conditions {
 				if cond.Type == fc && cond.Status == v1.ConditionTrue {
 					descMsgs = append(descMsgs, cond.Message)
@@ -91,7 +92,7 @@ func (c ConvergedResource) IsDoneApplying() (ctlresm.DoneApplyState, []string, e
 				}
 			}
 		}
-		for _, sc := range waitRules.SuccessfulConditions {
+		for _, sc := range wr.SuccessfulConditions {
 			for _, cond := range obj.Status.Conditions {
 				if cond.Type == sc && cond.Status == v1.ConditionTrue {
 					descMsgs = append(descMsgs, cond.Message)

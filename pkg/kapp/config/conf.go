@@ -31,7 +31,12 @@ func NewConfFromResources(resources []ctlres.Resource) ([]ctlres.Resource, Conf,
 		}
 	}
 
-	return rsWithoutConfigs, Conf{configs}, nil
+	cfg := Conf{configs}
+
+	// TODO: complete
+	ctlres.SetGlobalWaitingRules(cfg.WaitRuleMods())
+
+	return rsWithoutConfigs, cfg, nil
 }
 
 func (c Conf) RebaseMods() []ctlres.ResourceModWithMultiple {

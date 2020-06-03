@@ -3,7 +3,6 @@ package resources
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"reflect"
 	"strings"
 	"time"
@@ -56,55 +55,19 @@ type Resource interface {
 	MarkTransient(bool)
 	Transient() bool
 
-	WaitingRule() WaitingRuleMod
-	SetWaitingRule(mods []WaitingRuleMod)
-
 	unstructured() unstructured.Unstructured     // private
 	unstructuredPtr() *unstructured.Unstructured // private
 	setUnstructured(unstructured.Unstructured)   // private
 }
 
 type ResourceImpl struct {
-	un             unstructured.Unstructured
-	resType        ResourceType
-	transient      bool
-	origin         string
-	waitingRule    WaitingRuleMod
-	hasWaitingRule bool
+	un        unstructured.Unstructured
+	resType   ResourceType
+	transient bool
+	origin    string
 }
 
 var _ Resource = &ResourceImpl{}
-
-// Find waiting rule for specified resource
-func (r *ResourceImpl) WaitingRule() WaitingRuleMod {
-	if r.hasWaitingRule {
-		return r.waitingRule
-	}
-	log.Println("No waitingRule exists")
-	return r.waitingRule
-}
-
-// Find waiting rule for specified resource
-func (r *ResourceImpl) SetWaitingRule(rules []WaitingRuleMod) {
-	mod := WaitingRuleMod{}
-	hasMod := false
-	log.Printf("Setting Waiting Rule: length: %v\n", len(rules))
-	log.Printf("%v", rules)
-	log.Printf("res: %v", r.Description())
-	for _, rule := range rules {
-		for _, matcher := range rule.ResourceMatchers {
-			if matcher.Matches(r.DeepCopy()) {
-				log.Printf("Match found")
-				hasMod = true
-				mod.SupportsObservedGeneration = rule.SupportsObservedGeneration
-				mod.SuccessfulConditions = append(mod.SuccessfulConditions, rule.SuccessfulConditions...)
-				mod.FailureConditions = append(mod.FailureConditions, rule.FailureConditions...)
-			}
-		}
-	}
-	r.waitingRule = mod
-	r.hasWaitingRule = hasMod
-}
 
 func NewResourceUnstructured(un unstructured.Unstructured, resType ResourceType) *ResourceImpl {
 	return &ResourceImpl{un: un, resType: resType}
@@ -260,7 +223,7 @@ func (r *ResourceImpl) Equal(res Resource) bool {
 }
 
 func (r *ResourceImpl) DeepCopy() Resource {
-	return &ResourceImpl{*r.un.DeepCopy(), r.resType, r.transient, "", r.waitingRule, r.hasWaitingRule}
+	return &ResourceImpl{*r.un.DeepCopy(), r.resType, r.transient, ""}
 }
 
 func (r *ResourceImpl) DeepCopyRaw() map[string]interface{} {

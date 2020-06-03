@@ -40,7 +40,6 @@ func (a *LabeledResources) Prepare(resources []Resource, olmFunc OwnershipLabelM
 	}
 
 	for _, res := range resources {
-		res.SetWaitingRule(waitRuleMods)
 		assocLabel := NewAssociationLabel(res)
 		ownershipLabels := map[string]string{
 			labelKey:         labelVal,
